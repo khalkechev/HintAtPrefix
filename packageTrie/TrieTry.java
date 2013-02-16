@@ -5,8 +5,22 @@ import java.io.*;
 public class TrieTry {
 	public static void main(String[] args) throws IOException {
 		Trie trie = new Trie();
-		read("/Users/roman/Documents/Broccoli/Doc/Yandex/homework/HintAtPrefix/kz_top.txt", trie);
-		System.out.println("Запросы с префиксом \"ю\" " + trie.search("ю"));
+		//Считаем из файла и заполним наше Trie
+		read("/Users/roman/Documents/Broccoli/Doc/GitHub/homework/HintAtPrefix/kz_top.txt", trie);
+
+		//потестим функцию, что выдает все слова на заданный префикс
+		//System.out.println("Запросы с префиксом \"ю\" " + trie.search("ю"));
+
+		//потестим подсказки :)
+		Scanner scan = new Scanner(System.in);
+		for (int i = 1; i < 10; i++) {
+		    System.out.println("Тест №" + i + " Введите prefix и получите топ 10 подсказок");
+		    String prefix = scan.next();
+		    ListIterator<String> hintIterator = trie.hint(prefix).listIterator(10);
+		    while (hintIterator.hasPrevious()){
+			    System.out.println(hintIterator.previous());
+		    }
+	    }
 	}
 
 	//чтение входных данных по строкам и занесение их в Trie

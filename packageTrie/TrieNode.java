@@ -11,8 +11,7 @@ public class TrieNode {
 	//список дочерних узлов
 	private SortedMap<Character, TrieNode> edges;
 	//top-10 запросов и их ранки - находящихся в поддереве с вершиной в данном узле
-	TreeMap<Integer, String> top = new TreeMap<Integer, String>(10);
-
+	TreeMap<Integer, String> top = new TreeMap<Integer, String>();
 
 	//добавление дочернего узла
 	TrieNode addEdge(char c) {
@@ -34,9 +33,13 @@ public class TrieNode {
 		return (edges == null) ? null : edges.remove(c);
 	}
 
-	//итератор
+	//итератор дочерних узлов
 	Iterator<TrieNode> getChildren() {
 		return (edges == null) ? null : edges.values().iterator();
+	}
+	//итератор top
+	Iterator<String> getTop() {
+		return (top == null) ? null : top.values().iterator();
 	}
 
 	//назначить значение ключа текущему узлу
