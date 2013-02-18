@@ -65,7 +65,7 @@ public class TrieNode {
 	//узнать значение минимального ранга среди запросов top
 	int getMinRank() {
 		if (top.isEmpty()) { return 0;}
-		else { return top.higherKey(0);}
+		else { return top.firstKey();}
 	}
 
 	//узнать количество дочерних узлов
