@@ -164,6 +164,7 @@ public class Trie {
 		for (char c : prefix.toCharArray()) {
 			TrieNode child = currentNode.traverse(c);
 			if ( child == null ) {
+				//видимо опечатка - ищем близкие префиксы и выводим самый популярный
 				currentNode = near(prefix , 1);
 				break;
 				//return Collections.emptyList();
@@ -173,6 +174,7 @@ public class Trie {
 			}
 		}
 
+		if (currentNode == null) { return Collections.emptyList();}
 		List<String> hintTop = new ArrayList<String>();
 		Iterator<String> topIterator = currentNode.getTop();
 		if (topIterator != null) {
@@ -256,31 +258,37 @@ public class Trie {
 		* они являются детьми root в prefix.lenght()-ом поколении
 		* для этого использую обход в ширину Trie до нужного места
 		*/
+		DamerauLevensteinMetric metric = new DamerauLevensteinMetric();
 		int counter = prefix.length();
 		TrieNode currentNode = root;
-		Queue<TrieNode> queue = new LinkedList<TrieNode>();
+		Deque<TrieNode> queue = new LinkedList<TrieNode>();
 		queue.offer(currentNode);
+
+		long before = System.currentTimeMillis();
+
+		/**/
+		TrieNode myNode = new TrieNode();
+		/**/
 
 		do {
 			currentNode = queue.poll();
+			/*if (currentNode.getKey().length() + 1 == counter) {
+				queue.offerLast(currentNode);
+			}*/
 		    Iterator<TrieNode> children = currentNode.getChildren();
 		    if (children != null) {
 			    while (children.hasNext()) {
-			    	queue.offer(children.next());
+			    	//queue.offer(children.next());
+			    	/**/
+			    	myNode = children.next();
+			    	if (myNode.getKey().length() <= counter - max || metric.getDistance(prefix, myNode.getKey(), 2) <= max) {
+			    		queue.offer(myNode);
+			    	}
+			    	/**/
 			    }
 			}
-		} while (queue.peek().getKey().length() < counter);
+		} while (!queue.isEmpty() && (queue.peek().getKey().length() < counter));
 
-	   /* удалим слишком далекие префиксы, это те,
-		* которые с точки зрения нашей метрики дальше от данного чем max
-		*/
-		DamerauLevensteinMetric metric = new DamerauLevensteinMetric();
-		Iterator<TrieNode> iter1 = queue.iterator();
-		while (iter1.hasNext()) {
-			if (metric.getDistance(prefix, iter1.next().getKey(), 10) > max) { iter1.remove(); }
-		}
-
-		//найдем самый популяный префикс из перечисленных (с наибольшим ранком), остальные удалим
 		int maxRank = 0;
 		TrieNode node;
 		TrieNode bestNode = null;
@@ -295,7 +303,8 @@ public class Trie {
 				iterator.remove();
 			}
 		}
-
+		after = System.currentTimeMillis();
+		System.out.println("Время поиска самого популяного: " + (after - before));
 		//возвращаем узел с "лучшим" префиксом
 		return bestNode;
 	}
