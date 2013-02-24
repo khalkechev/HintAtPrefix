@@ -151,7 +151,7 @@ public class Trie {
 	}
 
 	/** 
-	 * Функция подсказок. Возвращает 10 подсказок по префиксу
+	 * Функция подсказок. Возвращает подсказоки по префиксу
 	 *
 	 * @param prefix
 	 *              префикс
@@ -160,14 +160,22 @@ public class Trie {
 	 *
 	 */
 	public List<String> hint(String prefix) {
+		int maxMisprint = 0;
 		TrieNode currentNode = root;
 		for (char c : prefix.toCharArray()) {
 			TrieNode child = currentNode.traverse(c);
 			if ( child == null ) {
 				//видимо опечатка - ищем близкие префиксы и выводим самый популярный
-				currentNode = near(prefix , 1);
-				break;
-				//return Collections.emptyList();
+				//если префикс короткий (<= 5) - допускаем 1 опечатку
+				if (prefix.length() <= 5) {
+					maxMisprint = 1;
+				}
+				//если префикс длины > 5, то допускается 2 опечатки
+				if (prefix.length() > 5) {
+					maxMisprint = 2;
+				}
+				//возвращаем наиболее вероятные подсказки
+				return near(prefix, maxMisprint);
 			}
 			else {
 				currentNode = child;
@@ -241,89 +249,94 @@ public class Trie {
 	public TrieNode getRoot() {
 		return root;
 	}
-
+	
    	/** 
-	 * Поиск узла с префиксом в Trie, который (префикс) отличается от данного не более, чем на
-	 * заданную величину и имеет список топ с наибольшим рейтингом
+   	 * Возвращает наиболее вероятные подсказки для префикса, в котором вероятно сделана опечатка
 	 *
 	 * @param prefix
 	 *              заданный префикс
 	 * @param max
 	 *           максимальное расстояние
 	 *
-	 * @return узел с "лучшим" префиксом (и близким к нашему и популярным)
+	 * @return список подсказок
 	 */
-	public TrieNode near(String prefix, int max) {
-	   /* Сперва создам список всех узлов в Trie с префиксами длины prefix.length() - будем искать среди них
-		* они являются детьми root в prefix.lenght()-ом поколении
-		* для этого использую обход в ширину Trie до нужного места
+	public List<String> near(String prefix, int max) {
+	   /* Сперва создам список всех узлов в Trie с префиксами длины prefix.length() и расстоянием до заданного prefix
+		* не более чем max
+		* для этого использую обход в ширину Trie до нужного места и функцию метрики
 		*/
 		DamerauLevensteinMetric metric = new DamerauLevensteinMetric();
 		int counter = prefix.length();
 		TrieNode currentNode = root;
-		Deque<TrieNode> queue = new LinkedList<TrieNode>();
+		Queue<TrieNode> queue = new LinkedList<TrieNode>();
 		queue.offer(currentNode);
-
-		long before = System.currentTimeMillis();
-
-		/**/
 		TrieNode myNode = new TrieNode();
-		/**/
 
 		do {
 			currentNode = queue.poll();
-			/*if (currentNode.getKey().length() + 1 == counter) {
-				queue.offerLast(currentNode);
-			}*/
 		    Iterator<TrieNode> children = currentNode.getChildren();
 		    if (children != null) {
 			    while (children.hasNext()) {
-			    	//queue.offer(children.next());
-			    	/**/
 			    	myNode = children.next();
-			    	if (myNode.getKey().length() <= counter - max || metric.getDistance(prefix, myNode.getKey(), 2) <= max) {
+			    	if (myNode.getKey().length() <= counter - max || metric.getDistance(prefix, myNode.getKey(), max + 1) <= max) {
 			    		queue.offer(myNode);
 			    	}
-			    	/**/
 			    }
 			}
 		} while (!queue.isEmpty() && (queue.peek().getKey().length() < counter));
 
-		int maxRank = 0;
+		if (queue.isEmpty()) { return null;}
+		//найдем три самых популярных
+		int firstRank = 0;
+		int secondRank = 0;
+		int thirdRank = 0;
 		TrieNode node;
-		TrieNode bestNode = null;
+		TrieNode firstNode = null;
+		TrieNode secondNode = null;
+		TrieNode thirdNode = null;
+		
 		Iterator<TrieNode> iterator = queue.iterator();
 		while (iterator.hasNext()) {
 			node = iterator.next();
-			if (maxRank < node.getMinRank()) {
-				maxRank = node.getMinRank();
-				bestNode = node;
-			}
-			else {
-				iterator.remove();
+			if (firstRank < node.getMinRank()) {
+				thirdRank = secondRank;
+				secondRank = firstRank;
+				firstRank = node.getMinRank();
+
+				thirdNode = secondNode;
+				secondNode = firstNode;
+				firstNode = node;
 			}
 		}
-		after = System.currentTimeMillis();
-		System.out.println("Время поиска самого популяного: " + (after - before));
-		//возвращаем узел с "лучшим" префиксом
-		return bestNode;
+
+		//соберу лучшие подсказки из этих трех узлов в results: 5 подсказок из firstNode и по 3 из secondNode и thirdNode
+		List<String> results = new ArrayList<String>();
+		int count = 5;
+		if (firstNode != null) {
+			Iterator<String> firstIter = firstNode.getTop();
+			while (firstIter.hasNext() && count > 0) {
+				results.add(firstIter.next());
+				count--;
+			}
+		}
+		count = 3;
+		if (secondNode != null) {
+			Iterator<String> secondIter = secondNode.getTop();
+			while (secondIter.hasNext() && count > 0) {
+				results.add(secondIter.next());
+				count--;
+			}
+		}
+		count = 3;
+		if (thirdNode != null) {
+			Iterator<String> thirdIter = thirdNode.getTop();
+			while (thirdIter.hasNext() && count > 0) {
+				results.add(thirdIter.next());
+				count--;
+			}
+		}
+		//верну список подсказок
+		return results;
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
