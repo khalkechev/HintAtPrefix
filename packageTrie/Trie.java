@@ -1,13 +1,17 @@
 package packageTrie;
-import java.util.ArrayList;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.io.*;
-
-import java.util.*;
+import java.util.HashMap;
+import java.util.Queue;
 
 
 /**
@@ -160,12 +164,40 @@ public class Trie {
 	 *
 	 */
 	public List<String> hint(String prefix) {
+		//максимальное допустимое количество опечаток
 		int maxMisprint = 0;
+		//список подсказок
+		List<String> hintTop = new ArrayList<String>();
+		//была ли смена раскладки клавиатуры?
+		boolean isKeyboardChange = false;
 		TrieNode currentNode = root;
 		for (char c : prefix.toCharArray()) {
 			TrieNode child = currentNode.traverse(c);
-			if ( child == null ) {
-				//видимо опечатка - ищем близкие префиксы и выводим самый популярный
+			//нет подсказок и раскладку еще не меняли? попробуем сменить раскладку клавиатуры и заново поискать
+			if (child == null && !isKeyboardChange) {
+				String myPrefix = this.keyboardChange(prefix);
+				isKeyboardChange = true;
+				if (myPrefix != null) {
+     				TrieNode myNode = root;
+	    			for (char ch : myPrefix.toCharArray()) {
+		    			TrieNode myChild = myNode.traverse(ch);
+			    		if (myChild == null) { break; }
+	    				else { myNode = myChild; }
+		    		}
+			    	if (myNode != null){
+				    	Iterator<String> myTopIterator = myNode.getTop();
+					    if (myTopIterator != null) {
+			                while ( myTopIterator.hasNext()) {
+			                    hintTop.add(myTopIterator.next());
+		                    }
+	                    }
+	                    return hintTop;
+				    }
+			    }
+			}
+			//смена раскладки не помогла - вероятно в префиксе опечатка
+			if ( child == null && isKeyboardChange) {
+				//ищем близкие префиксы и выводим самый популярный
 				//если префикс короткий (<= 5) - допускаем 1 опечатку
 				if (prefix.length() <= 5) {
 					maxMisprint = 1;
@@ -183,7 +215,6 @@ public class Trie {
 		}
 
 		if (currentNode == null) { return Collections.emptyList();}
-		List<String> hintTop = new ArrayList<String>();
 		Iterator<String> topIterator = currentNode.getTop();
 		if (topIterator != null) {
 			while ( topIterator.hasNext()) {
@@ -217,6 +248,23 @@ public class Trie {
 	}
 
 	/** 
+	 * Сохраняет ранк запроса из строки
+	 *
+	 * @param inputString
+	 *                   строка
+	 *
+	 * @return ранк запроса
+	 */
+	private int readRank(String inputString) {
+		String[] stringArray = inputString.split("\t");
+		int rank = Integer.parseInt(stringArray[2]);
+		return rank;
+	}
+	public TrieNode getRoot() {
+		return root;
+	}
+
+	/** 
 	 * Выбирает из строки вариант запроса без опечаток
 	 *
 	 * @param inputString
@@ -233,22 +281,6 @@ public class Trie {
 		else { resultString = stringArray[1]; }
 		return resultString;
 	}
-	/** 
-	 * Сохраняет ранк запроса
-	 *
-	 * @param inputString
-	 *                   строка
-	 *
-	 * @return ранк запроса
-	 */
-	private int readRank(String inputString) {
-		String[] stringArray = inputString.split("\t");
-		int rank = Integer.parseInt(stringArray[2]);
-		return rank;
-	}
-	public TrieNode getRoot() {
-		return root;
-	}
 	
    	/** 
    	 * Возвращает наиболее вероятные подсказки для префикса, в котором вероятно сделана опечатка
@@ -261,7 +293,7 @@ public class Trie {
 	 * @return список подсказок
 	 */
 	public List<String> near(String prefix, int max) {
-	   /* Сперва создам список всех узлов в Trie с префиксами длины prefix.length() и расстоянием до заданного prefix
+	   /* Сперва создам список(очередь) всех узлов в Trie с префиксами длины prefix.length() и расстоянием до заданного prefix
 		* не более чем max
 		* для этого использую обход в ширину Trie до нужного места и функцию метрики
 		*/
@@ -278,6 +310,9 @@ public class Trie {
 		    if (children != null) {
 			    while (children.hasNext()) {
 			    	myNode = children.next();
+			       /* вношу в очередь только те узлы Trie, ключи которых либо "близки" (в смысле метрики) от префикса,
+			    	* либо длина ключей которых меньше длины префикса минус max (допустимое число опечаток)
+			    	*/
 			    	if (myNode.getKey().length() <= counter - max || metric.getDistance(prefix, myNode.getKey(), max + 1) <= max) {
 			    		queue.offer(myNode);
 			    	}
@@ -286,7 +321,7 @@ public class Trie {
 		} while (!queue.isEmpty() && (queue.peek().getKey().length() < counter));
 
 		if (queue.isEmpty()) { return null;}
-		//найдем три самых популярных
+		//выберем три самых популярных
 		int firstRank = 0;
 		int secondRank = 0;
 		int thirdRank = 0;
@@ -337,6 +372,57 @@ public class Trie {
 		}
 		//верну список подсказок
 		return results;
+	}
+
+	/** 
+	 * Меняет раскладку клавиатуры для слова
+	 *
+	 * @param prefix
+	 *              строка
+	 *
+     * @return строка в другой раскладке
+	 */
+	public String keyboardChange(String prefix) {
+		Map<Character, Character> dictionary = new HashMap<Character, Character>();
+		dictionary.put('q', 'й');
+		dictionary.put('w', 'ц');
+		dictionary.put('e', 'у');
+		dictionary.put('r', 'к');
+		dictionary.put('t', 'е');
+		dictionary.put('y', 'н');
+		dictionary.put('u', 'г');
+		dictionary.put('i', 'ш');
+		dictionary.put('o', 'щ');
+		dictionary.put('p', 'з');
+		dictionary.put('[', 'х');
+		dictionary.put(']', 'ъ');
+		dictionary.put('a', 'ф');
+		dictionary.put('s', 'ы');
+		dictionary.put('d', 'в');
+		dictionary.put('f', 'а');
+		dictionary.put('g', 'п');
+		dictionary.put('h', 'р');
+		dictionary.put('j', 'о');
+		dictionary.put('k', 'л');
+		dictionary.put('l', 'д');
+		dictionary.put(';', 'ж');
+		dictionary.put('\'', 'э');
+		dictionary.put('z', 'я');
+		dictionary.put('x', 'ч');
+		dictionary.put('c', 'с');
+		dictionary.put('v', 'м');
+		dictionary.put('b', 'и');
+		dictionary.put('n', 'т');
+		dictionary.put('m', 'ь');
+		dictionary.put(',', 'б');
+		dictionary.put('.', 'ю');
+
+		StringBuilder prefixChange = new StringBuilder();
+		for (char c : prefix.toCharArray()) {
+			if(dictionary.get(c) == null) { return null; }
+			prefixChange.append(dictionary.get(c));
+		}
+		return prefixChange.toString();
 	}
 }
 

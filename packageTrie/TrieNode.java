@@ -2,10 +2,6 @@ package packageTrie;
 import java.util.Iterator;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.LinkedList;
-import java.util.ListIterator;
 
 /**
  * TrieNode
@@ -60,7 +56,7 @@ public class TrieNode {
 	Iterator<TrieNode> getChildren() {
 		return (edges == null) ? null : edges.values().iterator();
 	}
-	//итератор top
+	//итератор top запросов
 	Iterator<String> getTop() {
 		top.descendingMap();
 		return (top == null) ? null : top.values().iterator();
@@ -76,7 +72,6 @@ public class TrieNode {
 		this.key = key;
 	}
 
-	//узнать значение ключа текущего узла
 	/**  
 	 * Возвращает значение ключа данного узла
 	 *

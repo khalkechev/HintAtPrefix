@@ -19,12 +19,13 @@ public class TrieTry {
 		    long before = System.currentTimeMillis();
 		    List<String> results = trie.hint(prefix);
 		    long after = System.currentTimeMillis();
-
-		    Iterator<String> iterator = results.iterator();
-		    while (iterator.hasNext()) {
-		        System.out.println(iterator.next());
+		    if (results != null) {
+		        Iterator<String> iterator = results.iterator();
+    		    while (iterator.hasNext()) {
+	    	        System.out.println(iterator.next());
+		        }
+		        System.out.println("Время работы: " + (after - before));
 		    }
-		    System.out.println("Время работы: " + (after - before));
 	    }
 	    
 	}
