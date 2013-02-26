@@ -2,6 +2,7 @@ package packageTrie;
 
 /**
  * Метрика
+ * @author roman khalkechev
  */
 public abstract class Metric {
 

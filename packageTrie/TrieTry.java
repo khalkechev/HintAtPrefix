@@ -7,7 +7,7 @@ public class TrieTry {
 		Trie trie = new Trie();
 		//Считаем из файла и построим наше правильное Trie - без опечаток
 		System.out.println("Создаем Trie из поисковых запросов.");
-		trie.createTrie("/Users/roman/Documents/Broccoli/Doc/GitHub/homework/HintAtPrefix/kz_top.txt");
+		trie.createTrie("/Users/roman/Documents/Broccoli/Doc/GitHub/homework/HintAtPrefix/packageTrie/kz_top.txt");
 
 		//потестим подсказки :)
 		Scanner scan = new Scanner(System.in);

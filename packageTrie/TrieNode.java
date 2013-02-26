@@ -5,6 +5,7 @@ import java.util.TreeMap;
 
 /**
  * TrieNode
+ * @author roman khalkechev
  */
 public class TrieNode {
 	//ключ и его ранк (чем больше ранк - тем популярнее запрос)
@@ -16,12 +17,12 @@ public class TrieNode {
 	TreeMap<Integer, String> top = new TreeMap<Integer, String>();
 
 	/**  
-	 * Добавление дочернего узла
+	 * Добавление дочернего узла.
 	 *
 	 * @param c
 	 *
 	 */
-	TrieNode addEdge(char c) {
+	public TrieNode addEdge(char c) {
 		if ( edges == null ) {
 			edges = new TreeMap<Character, TrieNode>(); 
 		}
@@ -31,24 +32,24 @@ public class TrieNode {
 	}
 
 	/**  
-	 * Возвращает дочерний узел по ключу или null, если такого нет
+	 * Возвращает дочерний узел по ключу или null, если такого нет.
 	 *
 	 * @param c
 	 *         ключ
 	 *
 	 * @return узел
 	 */
-	TrieNode traverse(char c) {
+	public TrieNode traverse(char c) {
 		return (edges == null) ? null : edges.get(c);
 	}
 
 	/**  
-	 * Удаление дочернего узла по ключу
+	 * Удаление дочернего узла по ключу.
 	 *
 	 * @param c
 	 *
 	 */
-	TrieNode deleteEdge(char c) {
+	public TrieNode deleteEdge(char c) {
 		return (edges == null) ? null : edges.remove(c);
 	}
 
@@ -63,17 +64,17 @@ public class TrieNode {
 	}
 
 	/**  
-	 * Назначение значения ключа узлу
+	 * Назначение значения ключа узлу.
 	 *
 	 * @param key
 	 *           ключ
 	 */
-	void setKey(String key) {
+	public void setKey(String key) {
 		this.key = key;
 	}
 
 	/**  
-	 * Возвращает значение ключа данного узла
+	 * Возвращает значение ключа данного узла.
 	 *
 	 * @return ключ
 	 */
@@ -82,38 +83,38 @@ public class TrieNode {
 	}
 
 	/**  
-	 * Назначение значения ранка узлу
+	 * Назначение значения ранка узлу.
 	 *
 	 * @param rank
 	 *            ранк
 	 */
-	void setRank(int rank) {
+	public void setRank(int rank) {
 		this.rank = rank;
 	}
 
 	/**  
-	 * Возвращает значение ранка данного узла
+	 * Возвращает значение ранка данного узла.
 	 *
 	 * @return ранк
 	 */
-	int getRank() {
+	public int getRank() {
 		return rank;
 	}
 
 	/**  
 	 * Возвращает значение минимального ранка среди ранков
-	 * десяти самых популярных запросов в поддереве с вершиной в данном узле
+	 * десяти самых популярных запросов в поддереве с вершиной в данном узле.
 	 *
 	 * @return ранк
 	 */	
-	int getMinRank() {
+	public int getMinRank() {
 		if (top.isEmpty()) { return 0;}
 		else { return top.firstKey();}
 	}
 
 
 	/**  
-	 * Возвращает количество дочерних узлов
+	 * Возвращает количество дочерних узлов.
 	 *
 	 * @return количество дочерних узлов
 	 */

@@ -2,6 +2,7 @@ package packageTrie;
 
 /**
  * Метрика Дамерау-Левенштейна.
+ * @author roman khalkechev
  */
 public class DamerauLevensteinMetric extends Metric {
 

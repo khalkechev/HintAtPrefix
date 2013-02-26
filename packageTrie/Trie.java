@@ -16,6 +16,7 @@ import java.util.Queue;
 
 /**
  * Trie
+ * @author roman khalkechev
  */
 public class Trie {
 	private final TrieNode root;
@@ -24,7 +25,7 @@ public class Trie {
 	}
 
 	/**  
-	 * Добавление нового узла в Trie
+	 * Добавление нового узла в Trie.
 	 *
 	 * @param rank
 	 *            популярность запроса
@@ -45,8 +46,8 @@ public class Trie {
 				else { currentNode.setKey(String.valueOf(c)); }
 			}
 			else {
-			    /* в каждой вершине заполняем множество top десятью
-				 * самыми популярными запросами по поддереву
+			    /* В каждой вершине заполняем множество top десятью
+				 * самыми популярными запросами по поддереву.
 				 */
 				if (currentNode.top.keySet().size() < 10) {
 					currentNode.top.put(rank, key);
@@ -63,14 +64,14 @@ public class Trie {
 	}
 
 	/**  
-	 * Поиск узла с заданным ключем в Trie
+	 * Поиск узла с заданным ключем в Trie.
 	 *
 	 * @param key
 	 *            запрос
 	 *
 	 * @return узел
 	 */
-	private TrieNode searchNode(String key) {
+	public TrieNode searchNode(String key) {
 		TrieNode currentNode = root;
 		for (char c : key.toCharArray()) {
 			TrieNode child = currentNode.traverse(c);
@@ -85,7 +86,7 @@ public class Trie {
 	}
 
 	/** 
-	 * Удаление узла из Trie с заданным ключем 
+	 * Удаление узла из Trie с заданным ключем.
 	 *
 	 * @param key
 	 *            запрос
@@ -109,7 +110,7 @@ public class Trie {
 	}
 
 	/** 
-	 * Поиск всех узлов в Trie с ключем с заданным префиксом
+	 * Поиск всех узлов в Trie с ключем с заданным префиксом.
 	 *
 	 * @param prefix
 	 *              префикс
@@ -141,7 +142,7 @@ public class Trie {
 	 * @param results
 	 *                список узлов, в который сохраняются узлы, которые обошли
 	 */
-	private void preorderTraverse(TrieNode currentNode, List<String> results) {
+	public void preorderTraverse(TrieNode currentNode, List<String> results) {
 		if (currentNode == null) { return; }
 		if (currentNode.getKey() != null) {
 			results.add(currentNode.getKey());
@@ -155,7 +156,7 @@ public class Trie {
 	}
 
 	/** 
-	 * Функция подсказок. Возвращает подсказоки по префиксу
+	 * Функция подсказок. Возвращает подсказоки по префиксу.
 	 *
 	 * @param prefix
 	 *              префикс
@@ -225,7 +226,7 @@ public class Trie {
 	}
 
 	/** 
-	 * Создание Trie по данным из файла
+	 * Создание Trie по данным из файла.
 	 *
 	 * @param fileName
 	 *                имя файла
@@ -248,7 +249,7 @@ public class Trie {
 	}
 
 	/** 
-	 * Сохраняет ранк запроса из строки
+	 * Сохраняет ранк запроса из строки.
 	 *
 	 * @param inputString
 	 *                   строка
@@ -265,7 +266,7 @@ public class Trie {
 	}
 
 	/** 
-	 * Выбирает из строки вариант запроса без опечаток
+	 * Выбирает из строки вариант запроса без опечаток.
 	 *
 	 * @param inputString
 	 *                   строка
@@ -283,7 +284,7 @@ public class Trie {
 	}
 	
    	/** 
-   	 * Возвращает наиболее вероятные подсказки для префикса, в котором вероятно сделана опечатка
+   	 * Возвращает наиболее вероятные подсказки для префикса, в котором вероятно сделана опечатка.
 	 *
 	 * @param prefix
 	 *              заданный префикс
@@ -294,8 +295,8 @@ public class Trie {
 	 */
 	public List<String> near(String prefix, int max) {
 	   /* Сперва создам список(очередь) всех узлов в Trie с префиксами длины prefix.length() и расстоянием до заданного prefix
-		* не более чем max
-		* для этого использую обход в ширину Trie до нужного места и функцию метрики
+		* не более чем max.
+		* Для этого использую обход в ширину Trie до нужного места и функцию метрики.
 		*/
 		DamerauLevensteinMetric metric = new DamerauLevensteinMetric();
 		int counter = prefix.length();
@@ -310,8 +311,8 @@ public class Trie {
 		    if (children != null) {
 			    while (children.hasNext()) {
 			    	myNode = children.next();
-			       /* вношу в очередь только те узлы Trie, ключи которых либо "близки" (в смысле метрики) от префикса,
-			    	* либо длина ключей которых меньше длины префикса минус max (допустимое число опечаток)
+			       /* Вношу в очередь только те узлы Trie, ключи которых либо "близки" (в смысле метрики) от префикса,
+			    	* либо длина ключей которых меньше длины префикса минус max (допустимое число опечаток).
 			    	*/
 			    	if (myNode.getKey().length() <= counter - max || metric.getDistance(prefix, myNode.getKey(), max + 1) <= max) {
 			    		queue.offer(myNode);
@@ -375,7 +376,7 @@ public class Trie {
 	}
 
 	/** 
-	 * Меняет раскладку клавиатуры для слова
+	 * Меняет раскладку клавиатуры для слова.
 	 *
 	 * @param prefix
 	 *              строка
@@ -416,6 +417,17 @@ public class Trie {
 		dictionary.put('m', 'ь');
 		dictionary.put(',', 'б');
 		dictionary.put('.', 'ю');
+		dictionary.put(' ', ' ');
+		dictionary.put('0', '0');
+		dictionary.put('1', '1');
+		dictionary.put('2', '2');
+		dictionary.put('3', '3');
+		dictionary.put('4', '4');
+		dictionary.put('5', '5');
+		dictionary.put('6', '6');
+		dictionary.put('7', '7');
+		dictionary.put('8', '8');
+		dictionary.put('9', '9');
 
 		StringBuilder prefixChange = new StringBuilder();
 		for (char c : prefix.toCharArray()) {
